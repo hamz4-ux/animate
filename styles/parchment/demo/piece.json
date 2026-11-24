@@ -1,0 +1,35 @@
+{
+  "name": "parchment-demo",
+  "title": "Parchment demo",
+  "format": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 24,
+    "bpm": 120,
+    "duration": 6.0,
+    "frames": 144
+  },
+  "storyFormat": "F1 stations, one sheet",
+  "style": "parchment",
+  "build": [
+    "src/head.html",
+    "kit/core.js",
+    "style",
+    "src/geo.js",
+    "src/scenes.js",
+    "src/bridges.js",
+    "kit/morph.js",
+    "kit/board.js",
+    "kit/score-head.js",
+    "src/score.js",
+    "kit/score-tail.js"
+  ],
+  "review": {
+    "safe": {
+      "top": 240,
+      "bottom": 420,
+      "right": 140
+    },
+    "refs": {}
+  }
+}

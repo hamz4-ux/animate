@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suez — one cut through the desert</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1b1714; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { max-width: 100vw; max-height: 100vh; width: auto; height: auto; display: block; cursor: pointer; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+"use strict";
+// =====================================================================
+//  SUEZ — one cut through the desert. 30.0s @ 120 BPM, 24fps, 9:16.
+//  F1: one parchment sheet, a follow-camera through six stations, no cuts
+//  and no morphs (the camera is the transition). No narration, no captions:
+//  the only text is diegetic map toponomy. Style: styles/parchment.
+//  Build: node <skill>/tools/build.mjs pieces/suez-canal
+// =====================================================================
+const FPS = 24, W = 1080, H = 1920;
+const BPM = 120, BEAT = 60 / BPM, E8 = BEAT / 2, E16 = BEAT / 4;
+const DURATION = 30.0;
+const NFRAMES = Math.round(DURATION * FPS);
+const LOOP_T = NFRAMES / FPS;
+const SAFE = { top: 240, bottom: 420, right: 140 };
+const HAND = '"DejaVu Serif", Georgia, "Times New Roman", serif';
+const CX = 470;
+
+// the six stations, boundaries on the 8th grid (0.25s)
+const S = { port: 0.0, old: 5.0, isthmus: 10.0, cut: 14.0, route: 17.0, reveal: 24.0 };
+const ERA_LIST = [[S.port, S.old, () => scenePort()], [S.old, S.isthmus, () => sceneOldRoute()], [S.isthmus, S.cut, () => sceneIsthmus()],
+                  [S.cut, S.route, () => sceneCut()], [S.route, S.reveal, () => sceneNewRoute()], [S.reveal, DURATION, () => sceneReveal()]];
+const SHOTS = [
+  ['port',    0, 0.0,  5.0,  'a European port: crates go aboard'],
+  ['old',     1, 5.0,  10.0, 'the old way: all the way round Africa'],
+  ['isthmus', 2, 10.0, 14.0, 'the isthmus: land blocks the way; diggers work'],
+  ['cut',     3, 14.0, 17.0, 'water is cut across the neck and meets'],
+  ['route',   4, 17.0, 24.0, 'the short way through: Europe to Asia'],
+  ['reveal',  5, 24.0, 30.0, 'the whole sheet: the loop became a cut'],
+];
+const TIMELINE = {
+  width: W, height: H, fps: FPS, bpm: BPM, duration: DURATION, frames: NFRAMES, loop: LOOP_T, safe: SAFE,
+  format: 'F1',
+  shots: SHOTS.map(([key, era, t0, t1, title], i) => ({ id: i + 1, key, era, t0, t1, title })),
+  cuts: [],       // F1: the camera is the transition — no hard cuts
+  morphs: [],
+  cues: {
+    load: 0.5,                       // crates go aboard
+    sailOld: 5.3, sailOldEnd: 10.0,  // the long way, drawn on across the whole shot
+    survey: 10.2, dig: 10.4,         // the survey line, then the diggers
+    cut: 14.6, meet: 16.0,           // the channel is cut; the two ends meet
+    sailNew: 17.0, sailNewEnd: 21.5, // the short way, drawn on
+    ghost: 24.1, shortRoute: 25.0,   // the old loop returns as a ghost; the cut route stays bright
+  },
+  acts: [
+    { name: '1 Port',    role: 'build',   t0: 0.0,  t1: 5.0 },
+    { name: '2 Old way', role: 'journey', t0: 5.0,  t1: 10.0 },
+    { name: '3 Isthmus', role: 'build',   t0: 10.0, t1: 14.0 },
+    { name: '4 The cut', role: 'silence', t0: 14.0, t1: 17.0 },
+    { name: '5 New way', role: 'gift',    t0: 17.0, t1: 24.0 },
+    { name: '6 Reveal',  role: 'goodbye', t0: 24.0, t1: 30.0 },
+  ],
+  board: [
+    { t: 3.0,  title: 'the port: loading',        sound: 'low drone, one pluck', next: 'put out to sea' },
+    { t: 8.0,  title: 'round Africa: the long way', sound: 'slow pulse, wind',    next: 'the isthmus blocks it' },
+    { t: 12.5, title: 'digging the neck',          sound: 'picks, a low pulse',  next: 'the cut' },
+    { t: 16.0, title: 'the water meets',           sound: 'near silence, then the hit', next: 'the short way' },
+    { t: 20.5, title: 'Europe to Asia',            sound: 'full pad, plucks',    next: 'pull back' },
+    { t: 27.0, title: 'the whole sheet',           sound: 'the pad decays',      next: 'loops' },
+  ],
+  narration: [],
+};
+window.TIMELINE = TIMELINE;
